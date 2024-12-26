@@ -1,27 +1,36 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-function Login() {
+function Register() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleLogin = async () => {
+  const registerUser = async () => {
     try {
-      const response = await axios.post("http://127.0.0.1:5000/login", {
+      const response = await axios.post("http://127.0.0.1:5000/register", {
+        username,
         email,
         password,
       });
-      setMessage(response.data.message); // Login success message
+      setMessage(response.data.message); // Display success message
     } catch (error) {
       console.error(error);
-      setMessage(error.response?.data?.error || "Login failed");
+      setMessage("Registration failed. Please try again.");
     }
   };
 
   return (
     <div>
-      <h2>Login</h2>
+      <h2>Register</h2>
+      <input
+        type="text"
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <br />
       <input
         type="email"
         placeholder="Email"
@@ -36,10 +45,10 @@ function Login() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <br />
-      <button onClick={handleLogin}>Login</button>
+      <button onClick={registerUser}>Register</button>
       <p>{message}</p>
     </div>
   );
 }
 
-export default Login;
+export default Register;

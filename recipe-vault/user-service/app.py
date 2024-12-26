@@ -13,24 +13,31 @@ app.config['MYSQL_DB'] = 'recipe_vault'
 
 mysql = MySQL(app)
 
-# Registro de usuarios
+# REGISTER
 @app.route('/register', methods=['POST'])
 def register():
-    data = request.json
-    cursor = mysql.connection.cursor()
-    cursor.execute(
-        "INSERT INTO usuarios (nombre_usuario, correo_electronico, contraseña) VALUES (%s, %s, %s)",
-        (data['username'], data['email'], data['password'])
-    )
-    mysql.connection.commit()
-    cursor.close()
-    return jsonify({"message": "Usuario registrado con éxito"})
+    data = request.json  # Ensure Flask is expecting JSON
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    
+    # Extract required fields
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
 
+    # Validate fields
+    if not username or not email or not password:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    return jsonify({
+        "message": f"User {username} registered successfully!",
+        "data": data
+    })
 @app.route('/')
 def home():
     return "Welcome to the User Service API!"
 
-# Inicio de sesión
+# LOGIN
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -45,6 +52,16 @@ def login():
         return jsonify({"message": "Inicio de sesión exitoso"})
     else:
         return jsonify({"error": "Credenciales inválidas"}), 401
+
+# FAVORITES
+@app.route('/favorites', methods=['GET', 'POST'])
+def favorites():
+    if request.method == 'POST':
+        data = request.json
+        return jsonify({"message": "Recipe added to favorites!", "recipe": data})
+    elif request.method == 'GET':
+        return jsonify({"favorites": ["Spaghetti", "Tacos"]})
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
