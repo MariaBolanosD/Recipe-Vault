@@ -64,3 +64,56 @@ nav a:hover {
 main {
   padding: 20px;
 }
+
+h1 {
+  text-align: center;
+  margin-top: 20px;
+}
+
+button {
+  display: block;
+  margin: 10px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+ul, ol {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+li {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+h3 {
+  margin: 0;
+}
+
+li {
+  cursor: pointer;
+  transition: box-shadow 0.3s ease;
+}
+
+li:hover {
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+img {
+  border-radius: 8px;
+  margin: 20px 0;
+  max-width: 10%;
+}
