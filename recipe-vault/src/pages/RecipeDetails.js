@@ -33,7 +33,12 @@ function RecipeDetails() {
     <div>
       <h2>{recipe.name}</h2>
       {recipe.imageUrl && (
-        <img src={recipe.imageUrl} alt={recipe.name} style={{ width: "100%" }} />
+       <img 
+       src={recipe.imageUrl} 
+       alt={recipe.name} 
+       className="recipe-detail-image" 
+   />
+   
       )}
       <p>
         <strong>Category:</strong> {recipe.category || "General"}

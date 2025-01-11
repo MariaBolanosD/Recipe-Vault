@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import FetchRecipesButton from "../components/FetchRecipes";
 import RecipeList from "../components/RecipeList";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
   const [recipes, setRecipes] = useState([]); // State to hold recipe data
   const [loading, setLoading] = useState(false); // State for loading spinner
+  const navigate = useNavigate(); // Add this for navigation
 
   // Function to fetch recipes
   const fetchRecipes = async () => {
@@ -12,7 +14,7 @@ function Home() {
     try {
       const response = await fetch("http://localhost:3000/recipes");
       const data = await response.json();
-      setRecipes(data); // Update state with fetched recipes
+      setRecipes(data);
     } catch (error) {
       console.error("Error fetching recipes:", error);
     } finally {
@@ -28,18 +30,17 @@ function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // Include cookies for session
-        body: JSON.stringify({ spoonacularId }), // Send spoonacular ID
+        credentials: "include",
+        body: JSON.stringify({ spoonacularId }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Server error:", errorData.error);
         alert(errorData.error || "Failed to add to favorites.");
         return;
       }
-  
-      const data = await response.json();
+
       alert("Recipe added to favorites!");
     } catch (error) {
       console.error("Error adding to favorites:", error);
@@ -48,7 +49,6 @@ function Home() {
   };
   
 
-  // Fetch recipes on component mount
   useEffect(() => {
     fetchRecipes();
   }, []);
@@ -57,17 +57,15 @@ function Home() {
     <div>
       <h2>Welcome to Recipe Vault!</h2>
       <p>Find and save your favorite recipes.</p>
-      {/* Render the Recipe List */}
       {loading ? (
         <p>Loading...</p>
       ) : (
         <RecipeList
           recipes={recipes}
-          onAddToFavorites={addToFavorites} // Pass the addToFavorites function here
-          onViewDetails={(id) => console.log("View details for recipe:", id)} // Placeholder for navigation
+          onAddToFavorites={addToFavorites}
+          onViewDetails={(id) => navigate(`/recipe/${id}`)} // Navigate to the details page
         />
       )}
-      {/* Render the Fetch Recipes Button at the bottom */}
       <FetchRecipesButton onFetchComplete={fetchRecipes} />
     </div>
   );

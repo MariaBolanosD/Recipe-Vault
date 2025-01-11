@@ -14,8 +14,11 @@ app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_COOKIE_SECURE'] = True  # Use True in production with HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
-
-CORS(app, supports_credentials=True) 
+CORS(
+    app,
+    supports_credentials=True,  # Allow credentials (cookies, sessions)
+    origins=["http://localhost:3001"]  # Explicitly specify allowed origins
+)
 
 # MySQL connection
 db = mysql.connector.connect(
@@ -26,18 +29,27 @@ db = mysql.connector.connect(
 )
 cursor = db.cursor()
 
-@app.before_request
-def handle_preflight():
-    if request.method == "OPTIONS":
-        return '', 204  # Return a 204 response for preflight requests
+from flask_login import LoginManager
 
-@app.before_request
-def log_session_state():
-    print("Session data before request:", session)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
-@app.route('/session', methods=['GET'])
-def check_session():
-    return jsonify({"session": dict(session)}), 200
+@login_manager.user_loader
+def load_user(user_id):
+    # Query your user database and return the user object
+    cursor.execute("SELECT * FROM usuarios WHERE id = %s", (user_id,))
+    user = cursor.fetchone()
+    if user:
+        return {'id': user[0], 'email': user[1], 'username': user[2]}
+    return None
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3001"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
 
 # Route: Login a user
 @app.route('/login', methods=['POST'])
@@ -64,7 +76,6 @@ def login():
             return jsonify({"error": "Invalid password"}), 401
     else:
         return jsonify({"error": "User not found"}), 404
-
 
 @app.route('/protected', methods=['GET'])
 def protected():
@@ -110,13 +121,13 @@ def register():
         return jsonify({"error": "Email already exists"}), 409
 
 @app.route('/logout', methods=['POST'])
-@login_required
 def logout():
-    session.clear()  # Clear all session data
-    print("Session after clearing:", session)
-    response = jsonify({"message": "Logout successful"})
-    response.set_cookie('session', '', expires=0)  # Expire the session cookie
-    return response
+    try:
+        session.clear()  # Clear session data
+        return jsonify({"message": "Successfully logged out"}), 200
+    except Exception as e:
+        print("Error during logout:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/favorites', methods=['POST'])
@@ -147,6 +158,7 @@ def add_to_favorites():
         existing_favorite = cursor.fetchone()
 
         if existing_favorite:
+            print(f"Favorite already exists for user {user_id}, spoonacularId {spoonacular_id}")
             return jsonify({"message": "Recipe is already in favorites"}), 200
 
         # Insert the favorite into the database
@@ -156,10 +168,13 @@ def add_to_favorites():
         )
         db.commit()
 
+        print(f"Added favorite for user {user_id} with spoonacularId {spoonacular_id}")
         return jsonify({"message": "Recipe added to favorites"}), 201
     except Exception as e:
-        print("Error in /favorites:", e)  # Print the error to the console
+        # Log the error for debugging
+        print("Error in /favorites:", e)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():

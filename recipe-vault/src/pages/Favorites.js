@@ -32,33 +32,91 @@ function Favorites() {
 
   if (loading) return <p>Loading favorites...</p>;
 
+  // Helper function to capitalize the first letter
+  const capitalize = (str) => {
+    if (!str) return ""; // Handle empty or undefined strings
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
+
   return (
-    <div>
-      <h2>Your Favorite Recipes</h2>
-      <ul>
-        {favorites.map((recipe, index) => (
-          <li
-            key={recipe.spoonacularId}
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: "20px",
+        padding: "20px",
+      }}
+    >
+      {favorites.map((recipe) => (
+        <div
+          key={recipe.spoonacularId}
+          style={{
+            border: "1px solid #ddd",
+            borderRadius: "10px",
+            padding: "15px",
+            backgroundColor: "#f9f9f9",
+            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            alignItems: "center",
+            height: "100%",
+          }}
+        >
+          <h3
             style={{
-              border: "1px solid #ddd",
-              borderRadius: "5px",
-              padding: "10px",
+              textAlign: "center",
               margin: "10px 0",
-              backgroundColor: "#f9f9f9",
+              minHeight: "70px",
+              maxHeight: "70px",
+              lineHeight: "1.3",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              wordBreak: "break-word",
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
             }}
           >
-            <h3>{recipe.name}</h3>
-            <p>
-              <strong>Category:</strong> {recipe.category || "N/A"}
-            </p>
-            <img
-              src={recipe.imageUrl}
-              alt={recipe.name}
-              style={{ width: "100%" }}
-            />
-          </li>
-        ))}
-      </ul>
+            {recipe.name}
+          </h3>
+          <img
+            src={recipe.imageUrl}
+            alt={recipe.name}
+            style={{
+              width: "100%",
+              height: "200px",
+              objectFit: "cover",
+              borderRadius: "5px",
+            }}
+          />
+          <p
+            style={{
+              margin: "10px 0",
+              textAlign: "center",
+              minHeight: "30px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <strong>Category:</strong> {capitalize(recipe.category) || "N/A"}
+          </p>
+          <button
+            onClick={() => console.log(`View details for ${recipe.spoonacularId}`)}
+            style={{
+              backgroundColor: "#6c757d",
+              color: "#fff",
+              border: "none",
+              padding: "10px 15px",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            View Details
+          </button>
+        </div>
+      ))}
     </div>
   );
 }

@@ -23,14 +23,32 @@ function Search() {
     setRecipes(response.data);
   };
 
-  const addToFavorites = async (id) => {
+  // Function to add a recipe to favorites
+  const addToFavorites = async (spoonacularId) => {
     try {
-      await axios.post("http://localhost:4000/favorites", { id });
+      const response = await fetch("http://localhost:5000/favorites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ spoonacularId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Server error:", errorData.error);
+        alert(errorData.error || "Failed to add to favorites.");
+        return;
+      }
+
       alert("Recipe added to favorites!");
     } catch (error) {
       console.error("Error adding to favorites:", error);
+      alert("An error occurred while adding to favorites.");
     }
   };
+  
 
   return (
     <div>

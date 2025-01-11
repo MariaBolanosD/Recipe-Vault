@@ -115,5 +115,13 @@ li:hover {
 img {
   border-radius: 8px;
   margin: 20px 0;
-  max-width: 10%;
+}
+
+.recipe-detail-image {
+  width: 100%;
+  max-width: 40%; /* Set maximum width */
+  height: auto; /* Maintain aspect ratio */
+  margin: 0 auto; /* Center the image */
+  display: block;
+  margin-bottom: 20px;
 }

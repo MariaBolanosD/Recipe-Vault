@@ -1,0 +1,35 @@
+.search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px;
+}
+
+.recipe-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-item a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #333;
+}
+
+.favorite-button {
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: gray;
+  margin-left: 10px;
+  z-index: 10;
+}
+
+.favorite-button.active {
+  color: gold;
+}
