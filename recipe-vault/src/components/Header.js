@@ -30,6 +30,7 @@ function Header() {
         <a className="nav-link text-white" href="/">Home</a>
         <a className="nav-link text-white" href="/search">Search Recipes</a>
         <a className="nav-link text-white" href="/favorites">Favorites</a>
+        <a className="nav-link text-white" href="/register">Register</a>
         {loggedIn ? (
           <button
             onClick={handleLogout}

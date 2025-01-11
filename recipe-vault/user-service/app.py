@@ -5,7 +5,7 @@ import mysql.connector
 import re
 import requests
 from werkzeug.security import check_password_hash
-from flask_cors import CORS  # Import Flask-CORS
+from flask_cors import CORS, cross_origin# Import Flask-CORS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'SecretKey1'  # Replace with a secure, random key
@@ -14,11 +14,16 @@ app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_COOKIE_SECURE'] = True  # Use True in production with HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
-CORS(
-    app,
-    supports_credentials=True,  # Allow credentials (cookies, sessions)
-    origins=["http://localhost:3001"]  # Explicitly specify allowed origins
-)
+
+
+CORS(app, supports_credentials=True, resources={
+    r"/favorites/*": {
+        "origins": "http://localhost:3001",
+        "methods": ["GET", "POST", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
+
 
 # MySQL connection
 db = mysql.connector.connect(
@@ -43,13 +48,15 @@ def load_user(user_id):
         return {'id': user[0], 'email': user[1], 'username': user[2]}
     return None
 
-@app.after_request
-def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "http://localhost:3001"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    return response
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = jsonify()
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:3001")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        response.headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        return response
 
 # Route: Login a user
 @app.route('/login', methods=['POST'])
@@ -205,6 +212,35 @@ def get_favorites():
         return jsonify({"favorites": recipes}), 200
     except Exception as e:
         print("Error in /favorites:", e)  # Log the error
+        return jsonify({"error": str(e)}), 500
+
+
+
+@app.route('/favorites/<string:spoonacularId>', methods=['OPTIONS', 'DELETE'])
+@cross_origin(origins="http://localhost:3001", methods=["DELETE", "OPTIONS"], supports_credentials=True)
+def delete_favorite(spoonacularId):
+    if request.method == 'OPTIONS':
+        # Respond to preflight request
+        response = jsonify({"message": "Preflight allowed"})
+        response.headers["Access-Control-Allow-Origin"] = "http://localhost:3001"
+        response.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept, Z-Key"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Content-Type"] = "application/json"
+        return response, 200  # Use 200 OK for preflight responses
+
+    try:
+        # DELETE logic
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        cursor.execute(
+            "DELETE FROM favorites WHERE user_id = %s AND spoonacularId = %s",
+            (user_id, spoonacularId)
+        )
+        db.commit()
+        return jsonify({"message": "Favorite removed"}), 200
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 

@@ -1,52 +1,64 @@
 import React, { useState } from "react";
-import axios from "axios";
 
 function Register() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const registerUser = async () => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const response = await axios.post("http://127.0.0.1:5000/register", {
-        username,
-        email,
-        password,
+      const response = await fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
-      setMessage(response.data.message); // Display success message
+
+      if (response.ok) {
+        alert("User registered successfully!");
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to register user.");
+      }
     } catch (error) {
-      console.error(error);
-      setMessage("Registration failed. Please try again.");
+      console.error("Error registering user:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
   return (
     <div>
-      <h2>Register</h2>
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <br />
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <br />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <br />
-      <button onClick={registerUser}>Register</button>
-      <p>{message}</p>
+      <h1>Register</h1>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <button type="submit">Register</button>
+      </form>
     </div>
   );
 }

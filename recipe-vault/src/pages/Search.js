@@ -1,51 +1,69 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 
 function Search() {
   const [query, setQuery] = useState("");
   const [recipes, setRecipes] = useState([]);
+  const [favorites, setFavorites] = useState([]);
 
   const handleSearch = async () => {
     try {
-      const response = await axios.get(`http://localhost:4000/recipes?search=${query}`);
-      setRecipes(response.data);
+      const response = await fetch(`http://localhost:4000/recipes?search=${query}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch recipes");
+      }
+      const data = await response.json();
+      setRecipes(data);
+
+      // Fetch existing favorites
+      const favoritesResponse = await fetch("http://localhost:5000/favorites", {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!favoritesResponse.ok) {
+        throw new Error("Failed to fetch favorites");
+      }
+      const favoritesData = await favoritesResponse.json();
+
+      // Extract spoonacularId from each favorite object
+      if (Array.isArray(favoritesData)) {
+        setFavorites(favoritesData.map((fav) => fav.spoonacularId));
+      } else if (favoritesData.favorites && Array.isArray(favoritesData.favorites)) {
+        setFavorites(favoritesData.favorites.map((fav) => fav.spoonacularId));
+      } else {
+        console.error("Unexpected favorites response format:", favoritesData);
+        setFavorites([]);
+      }
     } catch (error) {
-      console.error("Error fetching recipes:", error);
+      console.error("Error fetching recipes or favorites:", error);
     }
   };
-  
 
-  const fetchRecipes = async () => {
-    const response = await axios.get("http://localhost:4000/recipes", {
-      params: { search: query }, // Fixed here
-    });
-    setRecipes(response.data);
-  };
-
-  // Function to add a recipe to favorites
-  const addToFavorites = async (spoonacularId) => {
+  const toggleFavorite = async (spoonacularId) => {
     try {
-      const response = await fetch("http://localhost:5000/favorites", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ spoonacularId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Server error:", errorData.error);
-        alert(errorData.error || "Failed to add to favorites.");
-        return;
+      if (favorites.includes(spoonacularId)) {
+        const response = await fetch(`http://localhost:5000/favorites/${spoonacularId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (!response.ok) {
+          throw new Error("Failed to remove from favorites");
+        }
+        setFavorites(favorites.filter((id) => id !== spoonacularId));
+      } else {
+        const response = await fetch("http://localhost:5000/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ spoonacularId }),
+        });
+        if (!response.ok) {
+          throw new Error("Failed to add to favorites");
+        }
+        setFavorites([...favorites, spoonacularId]);
       }
-
-      alert("Recipe added to favorites!");
     } catch (error) {
-      console.error("Error adding to favorites:", error);
-      alert("An error occurred while adding to favorites.");
+      console.error("Error toggling favorite:", error);
     }
   };
   
@@ -57,7 +75,7 @@ function Search() {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Enter an recipe name or ingredient..."
+        placeholder="Enter a recipe name or ingredient..."
         className="form-control mb-3"
       />
       <button onClick={handleSearch} className="btn btn-primary">
@@ -70,15 +88,23 @@ function Search() {
               <strong>{recipe.name}</strong>
             </Link>
             - {recipe.ingredients.join(", ")}
-            <button onClick={() => addToFavorites(recipe._id)} className="btn btn-secondary">
-              Add to Favorites
-            </button>
+            <span
+              style={{
+                fontSize: "1.5rem",
+                cursor: "pointer",
+                color: favorites.includes(recipe._id) ? "gold" : "gray",
+                marginLeft: "10px",
+              }}
+              onClick={() => toggleFavorite(recipe._id)}
+            >
+              ★
+            </span>
           </li>
-
         ))}
       </ul>
     </div>
   );
 }
+
 
 export default Search;
