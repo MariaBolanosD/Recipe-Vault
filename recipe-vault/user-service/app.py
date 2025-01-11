@@ -16,13 +16,7 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 
 
-CORS(app, supports_credentials=True, resources={
-    r"/favorites/*": {
-        "origins": "http://localhost:3001",
-        "methods": ["GET", "POST", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    }
-})
+CORS(app, supports_credentials=True, origins=["http://localhost:3001"])
 
 
 # MySQL connection
@@ -49,14 +43,16 @@ def load_user(user_id):
     return None
 
 @app.before_request
-def handle_preflight():
+def handle_options():
     if request.method == "OPTIONS":
-        response = jsonify()
+        response = jsonify({"message": "Preflight OK"})
         response.headers.add("Access-Control-Allow-Origin", "http://localhost:3001")
+        response.headers.add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        response.headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
         response.headers.add("Access-Control-Allow-Credentials", "true")
         return response
+
+
 
 # Route: Login a user
 @app.route('/login', methods=['POST'])
