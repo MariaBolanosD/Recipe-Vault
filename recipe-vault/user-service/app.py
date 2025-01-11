@@ -210,8 +210,6 @@ def get_favorites():
         print("Error in /favorites:", e)  # Log the error
         return jsonify({"error": str(e)}), 500
 
-
-
 @app.route('/favorites/<string:spoonacularId>', methods=['OPTIONS', 'DELETE'])
 @cross_origin(origins="http://localhost:3001", methods=["DELETE", "OPTIONS"], supports_credentials=True)
 def delete_favorite(spoonacularId):
@@ -237,6 +235,19 @@ def delete_favorite(spoonacularId):
         db.commit()
         return jsonify({"message": "Favorite removed"}), 200
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+import requests
+
+@app.route('/recommendations', methods=['GET'])
+def get_recommendations():
+    try:
+        response = requests.get('http://127.0.0.1:4000/recipes')
+        recipes = response.json()
+        print("Recipes from Node.js:", recipes)  # Debugging
+        return jsonify(recipes)
+    except Exception as e:
+        print("Error in /recommendations:", e)
         return jsonify({"error": str(e)}), 500
 
 

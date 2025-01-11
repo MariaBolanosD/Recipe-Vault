@@ -2,11 +2,14 @@ import React, { useState, useEffect } from "react";
 import FetchRecipesButton from "../components/FetchRecipes";
 import RecipeList from "../components/RecipeList";
 import { useNavigate } from "react-router-dom";
+import Recommendations from "./Recommendations";
+import RecipeCard from "../components/RecipeCard"; // Assuming you have this component
 
 function Home() {
   const [recipes, setRecipes] = useState([]); // State to hold recipe data
   const [loading, setLoading] = useState(false); // State for loading spinner
   const navigate = useNavigate(); // Add this for navigation
+  const [recommendations, setRecommendations] = useState([]);
 
   // Function to fetch recipes
   const fetchRecipes = async () => {
@@ -21,6 +24,28 @@ function Home() {
       setLoading(false);
     }
   };
+
+  const fetchRecommendations = async () => {
+    try {
+        const response = await fetch("http://localhost:5000/recommendations", {
+            credentials: "include",
+        });
+        if (!response.ok) {
+            console.error("Error fetching recommendations:", await response.text());
+            return;
+        }
+        const data = await response.json();
+        console.log("Recommendations:", data); // Debugging
+        setRecommendations(data);
+    } catch (error) {
+        console.error("Error fetching recommendations:", error);
+    }
+};
+
+
+  useEffect(() => {
+    fetchRecommendations();
+  }, []);
 
   // Function to add a recipe to favorites
   const addToFavorites = async (spoonacularId) => {
@@ -55,8 +80,11 @@ function Home() {
 
   return (
     <div>
-      <h2>Welcome to Recipe Vault!</h2>
+      <div className="home">
+      <h1>Welcome to Recipe Vault!</h1>
       <p>Find and save your favorite recipes.</p>
+      <Recommendations recommendations={recommendations} />
+    </div>
       {loading ? (
         <p>Loading...</p>
       ) : (
