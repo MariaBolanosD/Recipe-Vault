@@ -6,6 +6,9 @@ import re
 import requests
 from werkzeug.security import check_password_hash
 from flask_cors import CORS, cross_origin# Import Flask-CORS
+import time
+import mysql.connector
+from mysql.connector import Error
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'SecretKey1'  # Replace with a secure, random key
@@ -19,19 +22,32 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 CORS(app, supports_credentials=True, origins=["http://localhost:3001"])
 
 
-# MySQL connection
-db = mysql.connector.connect(
-    host="localhost",
-    user="root",  # Replace with your MySQL username
-    password="root",  # Replace with your MySQL password
-    database="recipe_vault"  # Use your database name
-)
-cursor = db.cursor()
-
 from flask_login import LoginManager
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+def connect_to_database():
+    retries = 5
+    while retries > 0:
+        try:
+            db = mysql.connector.connect(
+                host="db",
+                user="root",
+                password="root",
+                database="recipe_vault"
+            )
+            print("Connected to MySQL database")
+            return db
+        except Error as e:
+            print(f"Error connecting to MySQL: {e}")
+            retries -= 1
+            print(f"Retrying... ({5 - retries}/5)")
+            time.sleep(5)
+    raise Exception("Failed to connect to MySQL after 5 retries")
+
+db = connect_to_database()
+cursor = db.cursor()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -242,7 +258,7 @@ import requests
 @app.route('/recommendations', methods=['GET'])
 def get_recommendations():
     try:
-        response = requests.get('http://127.0.0.1:4000/recipes')
+        response = requests.get('http://recipe-service:4000/recipes')
         recipes = response.json()
         print("Recipes from Node.js:", recipes)  # Debugging
         return jsonify(recipes)

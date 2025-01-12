@@ -8,13 +8,30 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect("mongodb://localhost:27017/recipe_vault", {
+mongoose.connect("mongodb://mongo:27017/recipe_vault", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");
+});
+
+const corsOptions = {
+  origin: "http://localhost:3001", // Allow only the frontend origin
+  credentials: true, // Allow cookies and credentials
+};
+
+app.use(cors(corsOptions));
+
+// Your routes
+app.get("/recommendations", (req, res) => {
+  res.json({ message: "Recommendations retrieved successfully" });
+});
+
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log(`API Gateway running on port ${PORT}`);
 });
 
 const Recipe = require("./models/Recipe"); // Adjust the path if needed

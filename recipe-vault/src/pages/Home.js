@@ -27,7 +27,7 @@ function Home() {
 
   const fetchRecommendations = async () => {
     try {
-        const response = await fetch("http://localhost:5000/recommendations", {
+        const response = await fetch("http://localhost:4000/recommendations", {
             credentials: "include",
         });
         if (!response.ok) {
@@ -50,7 +50,7 @@ function Home() {
   // Function to add a recipe to favorites
   const addToFavorites = async (spoonacularId) => {
     try {
-      const response = await fetch("http://localhost:5000/favorites", {
+      const response = await fetch("http://localhost:4000/favorites", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
