@@ -21,10 +21,11 @@ CORS(app, supports_credentials=True, origins=["http://localhost:3001"])
 
 # MySQL connection
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",  # Replace with your MySQL username
-    password="root",  # Replace with your MySQL password
-    database="recipe_vault"  # Use your database name
+    host="db",
+    port=3307,  # Port mapped in Docker Compose
+    user="root",
+    password="root",
+    database="recipe_vault"
 )
 cursor = db.cursor()
 
@@ -244,7 +245,6 @@ def get_recommendations():
     try:
         response = requests.get('http://127.0.0.1:4000/recipes')
         recipes = response.json()
-        print("Recipes from Node.js:", recipes)  # Debugging
         return jsonify(recipes)
     except Exception as e:
         print("Error in /recommendations:", e)

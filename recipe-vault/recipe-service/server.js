@@ -7,11 +7,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect("mongodb://localhost:27017/recipe_vault", {
+mongoose.connect('mongodb://mongo:27017/recipe_vault', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
+
 
 mongoose.connection.once("open", () => {
   console.log("Connected to MongoDB");

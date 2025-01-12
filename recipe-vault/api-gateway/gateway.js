@@ -12,7 +12,7 @@ app.use("/recipes", async (req, res) => {
   try {
     const response = await axios({
       method: req.method,
-      url: `http://localhost:3000/recipes${req.url.replace("/recipes", "")}`, // Ensure the correct URL
+      url: `http://recipe-vault-recipe-service:3000/recipes${req.url.replace("/recipes", "")}`, // Ensure the correct URL
       data: req.body,
     });
     console.log("Response from Recipe Service:", response.data);
@@ -27,7 +27,7 @@ app.use("/favorites", async (req, res) => {
   try {
     const response = await axios({
       method: req.method,
-      url: `http://localhost:3000/favorites${req.url.replace("/favorites", "")}`, // Ensure the correct URL
+      url: `http://recipe-vault-recipe-service:3000/favorites${req.url.replace("/favorites", "")}`, // Ensure the correct URL
       data: req.body,
     });
     console.log("Response from Recipe Service:", response.data);

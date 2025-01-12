@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - db
+    volumes:
+      - ./user-service:/app
+
+  recipe-service:
+    build:
+      context: ./recipe-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    volumes:
+      - ./recipe-service:/app
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    depends_on:
+      - user-service
+      - recipe-service
+    volumes:
+      - ./api-gateway:/app
+
+  frontend:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"  # Map port 3001
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+    depends_on:
+      - api-gateway
+
+
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: recipe_vault
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "db", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+    
+
+
+volumes:
+  mongo-data:
