@@ -3,7 +3,6 @@ import FetchRecipesButton from "../components/FetchRecipes";
 import RecipeList from "../components/RecipeList";
 import { useNavigate } from "react-router-dom";
 import Recommendations from "./Recommendations";
-import RecipeCard from "../components/RecipeCard"; // Assuming you have this component
 
 function Home() {
   const [recipes, setRecipes] = useState([]); // State to hold recipe data
