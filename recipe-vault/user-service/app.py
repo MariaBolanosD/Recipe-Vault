@@ -145,8 +145,8 @@ def add_to_favorites():
 
         user_id = session['user_id']
         data = request.get_json()
-        print("Session user ID:", user_id)
-        print("Received data:", data)
+        #print("Session user ID:", user_id)
+        #print("Received data:", data)
 
         # Validate the input
         spoonacular_id = data.get('spoonacularId')
@@ -171,7 +171,7 @@ def add_to_favorites():
         )
         db.commit()
 
-        print(f"Added favorite for user {user_id} with spoonacularId {spoonacular_id}")
+        #print(f"Added favorite for user {user_id} with spoonacularId {spoonacular_id}")
         return jsonify({"message": "Recipe added to favorites"}), 201
     except Exception as e:
         # Log the error for debugging
@@ -191,7 +191,7 @@ def get_favorites():
         # Fetch favorite spoonacularIds from MySQL
         cursor.execute("SELECT spoonacularId FROM favorites WHERE user_id = %s", (user_id,))
         favorite_ids = [row[0] for row in cursor.fetchall()]  # Extract spoonacular IDs
-        print("Favorite IDs from MySQL:", favorite_ids)
+        #print("Favorite IDs from MySQL:", favorite_ids)
 
         if not favorite_ids:
             return jsonify({"favorites": []}), 200
@@ -244,7 +244,7 @@ def get_recommendations():
     try:
         response = requests.get('http://127.0.0.1:4000/recipes')
         recipes = response.json()
-        print("Recipes from Node.js:", recipes)  # Debugging
+        #print("Recipes from Node.js:", recipes)  # Debugging
         return jsonify(recipes)
     except Exception as e:
         print("Error in /recommendations:", e)
